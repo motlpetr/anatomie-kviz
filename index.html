@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hlasový kvíz - Anatomie svalů</title>
     <style>
         * {
@@ -18,7 +18,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
+            margin: 0;
         }
 
         .container {
@@ -27,67 +28,68 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             max-width: 800px;
             width: 100%;
-            padding: 40px;
+            padding: 20px;
+            margin: 10px;
         }
 
         h1 {
             text-align: center;
             color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2em;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .stat-box {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
             text-align: center;
         }
 
         .stat-label {
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #666;
             margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
         }
 
         .question-area {
             background: #f8f9fa;
-            padding: 30px;
+            padding: 20px;
             border-radius: 15px;
-            margin-bottom: 25px;
-            min-height: 200px;
+            margin-bottom: 20px;
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
         .question {
-            font-size: 1.4em;
+            font-size: 1.1em;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .answer-display {
-            font-size: 1.2em;
+            font-size: 1em;
             color: #667eea;
             text-align: center;
-            margin-top: 15px;
-            min-height: 30px;
+            margin-top: 10px;
+            min-height: 25px;
             font-style: italic;
         }
 
@@ -99,13 +101,15 @@
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 1.1em;
+            padding: 12px 20px;
+            font-size: 1em;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 600;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .btn-primary {
@@ -400,19 +404,145 @@
 
         @media (max-width: 600px) {
             .container {
-                padding: 20px;
+                padding: 15px;
+                margin: 5px;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
             }
             
             .stats {
                 grid-template-columns: 1fr;
+                gap: 8px;
             }
-            
+
+            .stat-box {
+                padding: 10px;
+            }
+
+            .stat-value {
+                font-size: 1.3em;
+            }
+
+            .mode-buttons {
+                grid-template-columns: 1fr !important;
+                gap: 8px;
+            }
+
+            .mode-btn {
+                padding: 10px;
+            }
+
+            .mode-icon {
+                font-size: 1.2em !important;
+            }
+
+            .mode-description {
+                font-size: 0.75em;
+            }
+
+            .group-buttons {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .group-btn {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+
+            .question-area {
+                padding: 15px;
+                min-height: 120px;
+            }
+
+            .question {
+                font-size: 1em;
+                line-height: 1.4;
+            }
+
+            .answer-display {
+                font-size: 0.9em;
+            }
+
             .controls {
                 grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            button {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+
+            .feedback {
+                padding: 15px;
+                font-size: 1em;
+            }
+
+            .settings {
+                padding: 15px;
+            }
+
+            .settings h3 {
+                font-size: 1em;
             }
             
             .checkbox-group {
                 grid-template-columns: 1fr;
+            }
+
+            .voice-selection {
+                padding: 12px;
+            }
+
+            .voice-selection h4 {
+                font-size: 0.9em;
+            }
+
+            .auto-listen-control {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+
+            .table-view {
+                padding: 15px;
+                max-height: 300px;
+            }
+
+            .muscle-table {
+                font-size: 0.8em;
+            }
+
+            .muscle-table th,
+            .muscle-table td {
+                padding: 6px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.1em;
+            }
+
+            .stat-label {
+                font-size: 0.75em;
+            }
+
+            .stat-value {
+                font-size: 1.2em;
+            }
+
+            .question {
+                font-size: 0.95em;
+            }
+
+            button {
+                font-size: 0.9em;
+                padding: 10px 12px;
             }
         }
     </style>
@@ -873,45 +1003,72 @@
 
         // Načtení dostupných hlasů
         function loadVoices() {
-            availableVoices = synthesis.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
+            const newVoices = synthesis.getVoices();
             
-            if (availableVoices.length === 0) {
+            if (newVoices.length === 0) {
                 return; // Hlasy ještě nejsou načtené
             }
             
+            // Pokud už jsou hlasy načtené a dropdown není prázdný, neaktualizuj
+            const voiceSelect = document.getElementById('voiceSelect');
+            if (availableVoices.length > 0 && voiceSelect.options.length > 1) {
+                return; // Už je načteno, neměň to
+            }
+            
+            availableVoices = newVoices;
             voiceSelect.innerHTML = '';
             
-            // Filtruj české hlasy nebo pokud nejsou, zobraz všechny
+            // Filtruj POUZE české hlasy
             let czechVoices = availableVoices.filter(voice => 
-                voice.lang.startsWith('cs') || voice.lang.startsWith('sk')
+                voice.lang.startsWith('cs')
             );
             
-            // Pokud nejsou české hlasy, použij všechny
+            // Pokud nejsou žádné české hlasy, zobraz všechny (jako fallback)
             const voicesToShow = czechVoices.length > 0 ? czechVoices : availableVoices;
             
-            voicesToShow.forEach((voice, index) => {
+            // Seřaď hlasy podle jména
+            voicesToShow.sort((a, b) => a.name.localeCompare(b.name));
+            
+            let defaultSelected = false;
+            
+            voicesToShow.forEach((voice) => {
                 const option = document.createElement('option');
                 option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
                 
-                // Označ ženské hlasy
-                if (voice.name.toLowerCase().includes('female') || 
-                    voice.name.toLowerCase().includes('zuzana') ||
-                    voice.name.toLowerCase().includes('woman')) {
-                    option.textContent += ' 👩';
+                // Přidej emoji pro lepší identifikaci
+                let label = voice.name;
+                if (voice.lang.startsWith('cs')) {
+                    label += ' 🇨🇿';
                 }
                 
+                // Označ ženské hlasy
+                const nameLower = voice.name.toLowerCase();
+                if (nameLower.includes('female') || 
+                    nameLower.includes('zuzana') ||
+                    nameLower.includes('woman')) {
+                    label += ' 👩';
+                }
+                
+                option.textContent = label;
                 voiceSelect.appendChild(option);
                 
-                // Vyber první český ženský hlas jako výchozí
-                if (!selectedVoice && (voice.name.toLowerCase().includes('zuzana') || 
-                    voice.name.toLowerCase().includes('female'))) {
-                    selectedVoice = voice;
-                    option.selected = true;
-                } else if (!selectedVoice && index === 0) {
-                    selectedVoice = voice;
-                    option.selected = true;
+                // Vyber výchozí hlas - preferuj Zuzanu, pak jiný ženský, pak Jakuba, pak první dostupný
+                if (!defaultSelected) {
+                    if (nameLower.includes('zuzana')) {
+                        selectedVoice = voice;
+                        option.selected = true;
+                        defaultSelected = true;
+                    } else if (!selectedVoice && nameLower.includes('female')) {
+                        selectedVoice = voice;
+                        option.selected = true;
+                        defaultSelected = true;
+                    } else if (!selectedVoice && nameLower.includes('jakub')) {
+                        selectedVoice = voice;
+                        option.selected = true;
+                    } else if (!selectedVoice) {
+                        selectedVoice = voice;
+                        option.selected = true;
+                    }
                 }
             });
         }
@@ -928,12 +1085,17 @@
             recognition.lang = 'cs-CZ';
             recognition.continuous = false;
             recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
         } else if ('SpeechRecognition' in window) {
             recognition = new SpeechRecognition();
             recognition.lang = 'cs-CZ';
             recognition.continuous = false;
             recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
         }
+
+        // Globální flag pro sledování stavu recognition
+        let isRecognizing = false;
 
         // Funkce pro text-to-speech
         function speak(text) {
@@ -1022,8 +1184,21 @@
             
             switch(questionType) {
                 case 'name':
-                    // DŮLEŽITÉ: Kontroluj jestli je info jedinečné
-                    const givenInfo = ['origin', 'insertion', 'function'][Math.floor(Math.random() * 3)];
+                    // DŮLEŽITÉ: Ptej se jen na základě povolených typů
+                    // Zjisti, které atributy můžeš použít (musí být povolené)
+                    const availableAttributes = [];
+                    if (settings.origin) availableAttributes.push('origin');
+                    if (settings.insertion) availableAttributes.push('insertion');
+                    if (settings.function) availableAttributes.push('function');
+                    
+                    // Pokud nejsou žádné další atributy povolené, nemůžeme se ptát na název
+                    if (availableAttributes.length === 0) {
+                        // Fallback - vygeneruj novou otázku
+                        generateQuestion();
+                        return;
+                    }
+                    
+                    const givenInfo = availableAttributes[Math.floor(Math.random() * availableAttributes.length)];
                     let searchKey = '';
                     let searchValue = '';
                     
@@ -1079,7 +1254,7 @@
             // Reset zobrazení
             const questionEl = document.getElementById('question');
             questionEl.textContent = questionText;
-            questionEl.style.fontSize = '1.4em';
+            questionEl.style.fontSize = ''; // Reset to CSS default (1.1em on mobile)
             document.getElementById('answerDisplay').textContent = "";
             document.getElementById('feedback').className = 'feedback';
             document.getElementById('feedback').style.display = 'none';
@@ -1170,7 +1345,7 @@
             
             // Schovat otázku po vyhodnocení
             document.getElementById('question').textContent = isCorrect ? '✅ Správná odpověď!' : '❌ Špatná odpověď';
-            document.getElementById('question').style.fontSize = '2em';
+            document.getElementById('question').style.fontSize = '1.5em';
             
             // Po zobrazení feedbacku automaticky načíst novou otázku (pokud je zapnuté auto-listen)
             if (autoListenEnabled) {
@@ -1208,17 +1383,41 @@
                 return;
             }
             
+            // Pokud už naslouchá, zastav to nejdřív
+            if (isRecognizing) {
+                try {
+                    recognition.stop();
+                } catch (e) {
+                    console.log('Error stopping recognition:', e);
+                }
+                isRecognizing = false;
+                setTimeout(startListening, 300); // Zkus znovu za chvíli
+                return;
+            }
+            
             document.getElementById('answerDisplay').textContent = "🎤 Naslouchám...";
             document.getElementById('startListening').classList.add('listening');
             
             try {
                 recognition.start();
+                isRecognizing = true;
             } catch (err) {
                 console.error('Recognition start error:', err);
-                // Pokud už běží, nejdřív ho zastav
+                isRecognizing = false;
+                document.getElementById('startListening').classList.remove('listening');
+                
                 if (err.message && err.message.includes('already started')) {
-                    recognition.stop();
-                    setTimeout(() => recognition.start(), 100);
+                    // Pokud už běží, zastav ho a zkus znovu
+                    setTimeout(() => {
+                        try {
+                            recognition.stop();
+                        } catch (e) {
+                            console.log('Error in stop:', e);
+                        }
+                        setTimeout(startListening, 300);
+                    }, 100);
+                } else {
+                    document.getElementById('answerDisplay').textContent = "❌ Chyba mikrofonu - zkus to znovu";
                 }
             }
         }
@@ -1388,22 +1587,41 @@
 
         // Speech recognition callbacks
         if (recognition) {
+            recognition.onstart = () => {
+                isRecognizing = true;
+                console.log('Recognition started');
+            };
+
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('answerDisplay').textContent = `Tvoje odpověď: ${transcript}`;
                 document.getElementById('startListening').classList.remove('listening');
+                isRecognizing = false;
                 
                 checkAnswer(transcript);
             };
 
             recognition.onerror = (event) => {
                 console.error('Speech recognition error:', event.error);
-                document.getElementById('answerDisplay').textContent = `Chyba: ${event.error}`;
                 document.getElementById('startListening').classList.remove('listening');
+                isRecognizing = false;
+                
+                // Specifické chybové hlášky
+                if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+                    document.getElementById('answerDisplay').textContent = `⚠️ Povolte přístup k mikrofonu`;
+                } else if (event.error === 'no-speech') {
+                    document.getElementById('answerDisplay').textContent = `🔇 Nic jsem neslyšel - zkus znovu`;
+                } else if (event.error === 'aborted') {
+                    document.getElementById('answerDisplay').textContent = `⏸️ Naslouchání přerušeno`;
+                } else {
+                    document.getElementById('answerDisplay').textContent = `❌ Chyba: ${event.error}`;
+                }
             };
 
             recognition.onend = () => {
                 document.getElementById('startListening').classList.remove('listening');
+                isRecognizing = false;
+                console.log('Recognition ended');
             };
         }
 
