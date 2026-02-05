@@ -237,6 +237,55 @@
             cursor: pointer;
         }
 
+        .mode-selection {
+            margin-bottom: 20px;
+        }
+
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mode-btn {
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            background: #f0f0ff;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .mode-btn .mode-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mode-description {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .mode-btn.active .mode-description {
+            color: rgba(255,255,255,0.9);
+        }
+
         .group-selection {
             margin-bottom: 15px;
         }
@@ -367,8 +416,29 @@
             <div class="progress-bar" id="progressBar"></div>
         </div>
 
+        <div class="mode-selection">
+            <h3 style="color: #667eea; margin-bottom: 10px;">Režim procvičování</h3>
+            <div class="mode-buttons">
+                <button class="mode-btn" data-mode="voice">
+                    <span class="mode-icon">🎤</span>
+                    <div>Hlasový</div>
+                    <div class="mode-description">Otázka nahlas, odpovídáš hlasem</div>
+                </button>
+                <button class="mode-btn active" data-mode="text">
+                    <span class="mode-icon">📝</span>
+                    <div>Textový</div>
+                    <div class="mode-description">Přečteš si, odpovíš v duchu, zkontroluj</div>
+                </button>
+                <button class="mode-btn" data-mode="hybrid">
+                    <span class="mode-icon">🔊</span>
+                    <div>Hybridní</div>
+                    <div class="mode-description">Otázka nahlas, odpovídáš v duchu</div>
+                </button>
+            </div>
+        </div>
+
         <div class="settings">
-            <div class="auto-listen-control">
+            <div class="auto-listen-control" id="autoListenControl" style="display: none;">
                 <input type="checkbox" id="autoListen">
                 <label for="autoListen" style="cursor: pointer; font-weight: 600;">
                     🎤 Automatické naslouchání po každé otázce (doporučeno)
@@ -436,7 +506,9 @@
             <button class="btn-success" id="startListening">🎤 Naslouchat</button>
             <button class="btn-secondary" id="repeatQuestion">🔊 Opakovat otázku</button>
             <button class="btn-secondary" id="toggleTable">📋 Zobrazit tabulku</button>
-            <button class="btn-danger btn-full" id="showAnswer">👁️ Ukázat odpověď</button>
+            <button class="btn-danger btn-full" id="showAnswer">👁️ Zobrazit odpověď</button>
+            <button class="btn-success" id="markCorrect" style="display: none;">✅ Věděl(a) jsem</button>
+            <button class="btn-danger" id="markIncorrect" style="display: none;">❌ Nevěděl(a) jsem</button>
         </div>
     </div>
 
@@ -753,6 +825,7 @@
         let currentQuestion = null;
         let correctAnswer = "";
         let currentGroup = 'all';
+        let currentMode = 'text'; // voice, text, hybrid
         let autoListenEnabled = false;
         let stats = {
             correct: 0,
@@ -797,6 +870,48 @@
             };
             
             synthesis.speak(utterance);
+        }
+
+        // Funkce pro aktualizaci UI podle režimu
+        function updateModeUI() {
+            const autoListenControl = document.getElementById('autoListenControl');
+            const startListeningBtn = document.getElementById('startListening');
+            const repeatBtn = document.getElementById('repeatQuestion');
+            const showAnswerBtn = document.getElementById('showAnswer');
+            const markCorrectBtn = document.getElementById('markCorrect');
+            const markIncorrectBtn = document.getElementById('markIncorrect');
+            
+            if (currentMode === 'text') {
+                // Textový režim - bez hlasu, s self-assessment
+                autoListenControl.style.display = 'none';
+                startListeningBtn.style.display = 'none';
+                repeatBtn.style.display = 'none';
+                showAnswerBtn.style.display = 'block';
+                showAnswerBtn.classList.remove('btn-full');
+                showAnswerBtn.textContent = '👁️ Zobrazit odpověď';
+                markCorrectBtn.style.display = 'none';
+                markIncorrectBtn.style.display = 'none';
+            } else if (currentMode === 'voice') {
+                // Hlasový režim - vše
+                autoListenControl.style.display = 'flex';
+                startListeningBtn.style.display = 'block';
+                repeatBtn.style.display = 'block';
+                showAnswerBtn.style.display = 'block';
+                showAnswerBtn.classList.add('btn-full');
+                showAnswerBtn.textContent = '👁️ Ukázat odpověď';
+                markCorrectBtn.style.display = 'none';
+                markIncorrectBtn.style.display = 'none';
+            } else { // hybrid
+                // Hybridní - otázka nahlas, bez naslouchání
+                autoListenControl.style.display = 'none';
+                startListeningBtn.style.display = 'none';
+                repeatBtn.style.display = 'block';
+                showAnswerBtn.style.display = 'block';
+                showAnswerBtn.classList.remove('btn-full');
+                showAnswerBtn.textContent = '👁️ Zobrazit odpověď';
+                markCorrectBtn.style.display = 'none';
+                markIncorrectBtn.style.display = 'none';
+            }
         }
 
         // Generování nové otázky
@@ -875,13 +990,14 @@
             document.getElementById('feedback').className = 'feedback';
             document.getElementById('feedback').style.display = 'none';
             
-            // Přečti otázku nahlas
-            speak(questionText);
+            // Přečti otázku nahlas pouze v hlasovém a hybridním režimu
+            if (currentMode === 'voice' || currentMode === 'hybrid') {
+                speak(questionText);
+            }
             
-            // Pokud je zapnuté automatické naslouchání, spusť ho po přečtení otázky
-            if (autoListenEnabled) {
-                // Počkej než se otázka přečte (odhadovaná doba)
-                const estimatedDuration = questionText.length * 50; // ~50ms na znak
+            // Automatické naslouchání pouze v hlasovém režimu
+            if (currentMode === 'voice' && autoListenEnabled) {
+                const estimatedDuration = questionText.length * 50;
                 setTimeout(() => {
                     if (currentQuestion && currentQuestion.text === questionText) {
                         startListening();
@@ -1007,8 +1123,29 @@
 
         document.getElementById('showAnswer').addEventListener('click', () => {
             if (currentQuestion) {
-                document.getElementById('answerDisplay').textContent = `Odpověď: ${correctAnswer}`;
-                speak(`Správná odpověď je: ${correctAnswer}`);
+                if (currentMode === 'text' || currentMode === 'hybrid') {
+                    // V textovém/hybridním režimu jen ukázat odpověď bez hodnocení
+                    document.getElementById('answerDisplay').textContent = `Správná odpověď: ${correctAnswer}`;
+                    const feedback = document.getElementById('feedback');
+                    feedback.className = 'feedback';
+                    feedback.style.display = 'block';
+                    feedback.style.background = '#e3f2fd';
+                    feedback.style.color = '#1565c0';
+                    feedback.innerHTML = `💡 Správná odpověď: <div class="correct-answer">${correctAnswer}</div><div style="margin-top: 10px; font-weight: bold;">Věděl(a) jsi to?</div>`;
+                    
+                    // Zobraz tlačítka pro self-assessment
+                    document.getElementById('markCorrect').style.display = 'block';
+                    document.getElementById('markIncorrect').style.display = 'block';
+                    document.getElementById('showAnswer').style.display = 'none';
+                    
+                    if (currentMode === 'hybrid') {
+                        speak(`Správná odpověď je: ${correctAnswer}`);
+                    }
+                } else {
+                    // V hlasovém režimu standardní chování
+                    document.getElementById('answerDisplay').textContent = `Odpověď: ${correctAnswer}`;
+                    speak(`Správná odpověď je: ${correctAnswer}`);
+                }
             }
         });
 
@@ -1072,6 +1209,16 @@
             });
         }
 
+        // Mode selection
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                updateModeUI();
+            });
+        });
+
         // Auto-listen checkbox handler
         document.getElementById('autoListen').addEventListener('change', (e) => {
             autoListenEnabled = e.target.checked;
@@ -1086,6 +1233,45 @@
         });
 
         document.getElementById('startListening').addEventListener('click', startListening);
+
+        // Self-assessment buttons
+        document.getElementById('markCorrect').addEventListener('click', () => {
+            stats.correct++;
+            stats.total++;
+            updateStats();
+            
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = `✅ Správně! <div class="correct-answer">${correctAnswer}</div>`;
+            
+            // Schovej self-assessment tlačítka
+            document.getElementById('markCorrect').style.display = 'none';
+            document.getElementById('markIncorrect').style.display = 'none';
+            
+            // Po chvíli načti novou otázku
+            setTimeout(() => {
+                generateQuestion();
+            }, 2000);
+        });
+
+        document.getElementById('markIncorrect').addEventListener('click', () => {
+            stats.incorrect++;
+            stats.total++;
+            updateStats();
+            
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback incorrect';
+            feedback.innerHTML = `❌ Nevadí, příště to půjde! <div class="correct-answer">${correctAnswer}</div>`;
+            
+            // Schovej self-assessment tlačítka
+            document.getElementById('markCorrect').style.display = 'none';
+            document.getElementById('markIncorrect').style.display = 'none';
+            
+            // Po chvíli načti novou otázku
+            setTimeout(() => {
+                generateQuestion();
+            }, 2000);
+        });
 
         // Speech recognition callbacks
         if (recognition) {
@@ -1110,6 +1296,7 @@
 
         // Inicializace
         updateStats();
+        updateModeUI();
     </script>
 </body>
 </html>
