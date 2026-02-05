@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hlasový kvíz - Anatomie svalů</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-area {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .answer-display {
+            font-size: 1.2em;
+            color: #667eea;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 30px;
+            font-style: italic;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        .listening {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+            display: block;
+        }
+
+        .correct-answer {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .settings {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .settings h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .auto-listen-control {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #4caf50;
+        }
+
+        .auto-listen-control.active {
+            background: #c8e6c9;
+        }
+
+        .auto-listen-control input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .group-selection {
+            margin-bottom: 15px;
+        }
+
+        .group-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .group-btn {
+            padding: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        .group-btn:hover {
+            background: #f0f0ff;
+        }
+
+        .group-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .table-view {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .table-view.show {
+            display: block;
+        }
+
+        .muscle-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .muscle-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+
+        .muscle-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .muscle-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .progress {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: #667eea;
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .speaking {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Hlasový kvíz - Anatomie svalů</h1>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Správně</div>
+                <div class="stat-value" id="correctCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Špatně</div>
+                <div class="stat-value" id="incorrectCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Úspěšnost</div>
+                <div class="stat-value" id="successRate">0%</div>
+            </div>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="settings">
+            <div class="auto-listen-control">
+                <input type="checkbox" id="autoListen">
+                <label for="autoListen" style="cursor: pointer; font-weight: 600;">
+                    🎤 Automatické naslouchání po každé otázce (doporučeno)
+                </label>
+            </div>
+            
+            <h3>Skupina svalů</h3>
+            <div class="group-selection">
+                <div class="group-buttons">
+                    <button class="group-btn active" data-group="all">Všechny</button>
+                    <button class="group-btn" data-group="lower">Dolní končetina</button>
+                    <button class="group-btn" data-group="upper">Horní končetina</button>
+                    <button class="group-btn" data-group="back">Záda</button>
+                    <button class="group-btn" data-group="abdomen">Břicho</button>
+                    <button class="group-btn" data-group="chest">Hrudník</button>
+                </div>
+            </div>
+            
+            <h3>Typ otázek</h3>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" id="askName" checked>
+                    <span>Ptát se na název svalu</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="askOrigin" checked>
+                    <span>Ptát se na začátek</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="askInsertion" checked>
+                    <span>Ptát se na úpon</span>
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" id="askFunction" checked>
+                    <span>Ptát se na funkci</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="table-view" id="tableView">
+            <h3>📋 Přehled svalů - <span id="groupTitle">Všechny skupiny</span></h3>
+            <table class="muscle-table" id="muscleTable">
+                <thead>
+                    <tr>
+                        <th>Název</th>
+                        <th>Začátek</th>
+                        <th>Úpon</th>
+                        <th>Funkce</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="question-area">
+            <div class="question" id="question">Klikni na "Nová otázka" pro začátek</div>
+            <div class="answer-display" id="answerDisplay"></div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn-primary" id="newQuestion">🔄 Nová otázka</button>
+            <button class="btn-success" id="startListening">🎤 Naslouchat</button>
+            <button class="btn-secondary" id="repeatQuestion">🔊 Opakovat otázku</button>
+            <button class="btn-secondary" id="toggleTable">📋 Zobrazit tabulku</button>
+            <button class="btn-danger btn-full" id="showAnswer">👁️ Ukázat odpověď</button>
+        </div>
+    </div>
+
+    <script>
+        // Data o svalech - rozděleno do skupin
+        const muscleData = {
+            lower: [ // Dolní končetina
+                {
+                    name: "velký sval hýžďový",
+                    origin: "lopata kosti kyčelní",
+                    insertion: "zadní strana kosti stehenní, široká povázka",
+                    function: "zanožení v kyčli, napínání široké povázky"
+                },
+                {
+                    name: "střední hýžďový sval",
+                    origin: "kost kyčelní",
+                    insertion: "velký chocholík kosti stehenní",
+                    function: "unožení v kyčli"
+                },
+                {
+                    name: "malý hýžďový sval",
+                    origin: "kost kyčelní",
+                    insertion: "velký chocholík kosti stehenní",
+                    function: "unožení v kyčli"
+                },
+                {
+                    name: "napínač široké povázky",
+                    origin: "trn kosti kyčelní",
+                    insertion: "široká povázka",
+                    function: "napínání široké povázky a tím stabilizace kolene"
+                },
+                {
+                    name: "bedro-kyčlo-stehenní sval",
+                    origin: "vnitřní strana kosti kyčelní, bederní páteř",
+                    insertion: "malý chocholík kosti stehenní",
+                    function: "přednožení v kyčli, stabilizace postavení pánve"
+                },
+                {
+                    name: "zevní rotátory kyčle",
+                    origin: "různá místa pánve",
+                    insertion: "za velký chocholík",
+                    function: "zevní rotace v kyčli"
+                },
+                {
+                    name: "krejčovský sval",
+                    origin: "trn kosti kyčelní",
+                    insertion: "vnitřní strana kosti holenní",
+                    function: "pokrčení v kyčli a v kolení"
+                },
+                {
+                    name: "čtyřhlavý sval stehenní",
+                    origin: "kost kyčelní a kost stehenní",
+                    insertion: "přes čéšku na drsnatinu kosti holenní",
+                    function: "natažení kolene"
+                },
+                {
+                    name: "dvojhlavý sval stehenní",
+                    origin: "hrbol kosti sedací a stehenní kost",
+                    insertion: "hlavička kosti lýtkové",
+                    function: "zanožení v kyčli, pokrčení v kolení"
+                },
+                {
+                    name: "poloblanitý sval",
+                    origin: "hrbol sedací kosti",
+                    insertion: "zadní strana holenní kosti",
+                    function: "zanožení v kyčli, pokrčení v kolení"
+                },
+                {
+                    name: "pološlašitý sval",
+                    origin: "hrbol sedací kosti",
+                    insertion: "zadní strana holenní kosti",
+                    function: "zanožení v kyčli, pokrčení v kolení"
+                },
+                {
+                    name: "přitahovače stehna",
+                    origin: "kost stydká",
+                    insertion: "vnitřní strana kosti stehenní a holenní",
+                    function: "přinožení stehna"
+                },
+                {
+                    name: "trojhlavý sval lýtkový",
+                    origin: "dolní konec kosti stehenní a zadní strana kosti holenní a lýtkové",
+                    insertion: "pomocí achillovy šlachy na patní kost",
+                    function: "ohnutí nohy, stoj na špičkách"
+                },
+                {
+                    name: "zadní holenní sval",
+                    origin: "zadní strany kosti holenní a lýtkové",
+                    insertion: "chodidlová strana nohy, palce a prstů",
+                    function: "ohnutí palce a prstů"
+                },
+                {
+                    name: "dlouhý ohybač palce",
+                    origin: "zadní strany kosti holenní a lýtkové",
+                    insertion: "chodidlová strana nohy, palce a prstů",
+                    function: "ohnutí palce a prstů"
+                },
+                {
+                    name: "dlouhý ohybač prstů",
+                    origin: "zadní strany kosti holenní a lýtkové",
+                    insertion: "chodidlová strana nohy, palce a prstů",
+                    function: "ohnutí palce a prstů"
+                },
+                {
+                    name: "přední holenní sval",
+                    origin: "kost holenní",
+                    insertion: "hřbet nohy, palce a prstů",
+                    function: "natažení palce a prstů, stoj na patách"
+                },
+                {
+                    name: "dlouhý natahovač prstů",
+                    origin: "kost holenní",
+                    insertion: "hřbet nohy, palce a prstů",
+                    function: "natažení palce a prstů, stoj na patách"
+                },
+                {
+                    name: "dlouhý natahovač palce",
+                    origin: "kost holenní",
+                    insertion: "hřbet nohy, palce a prstů",
+                    function: "natažení palce a prstů, stoj na patách"
+                },
+                {
+                    name: "krátký lýtkový sval",
+                    origin: "kost lýtková",
+                    insertion: "noha",
+                    function: "vtočení nohy"
+                },
+                {
+                    name: "dlouhý lýtkový sval",
+                    origin: "kost lýtková",
+                    insertion: "noha",
+                    function: "vtočení nohy"
+                }
+            ],
+            upper: [ // Horní končetina
+                {
+                    name: "deltový sval",
+                    origin: "hřeben a nadpažek lopatky, klíční kost",
+                    insertion: "kost pažní",
+                    function: "upažení ruky"
+                },
+                {
+                    name: "nadhřebenový sval",
+                    origin: "nad hřebenem lopatky",
+                    insertion: "kost pažní",
+                    function: "zahájení upažení ruky"
+                },
+                {
+                    name: "podhřebenový sval",
+                    origin: "pod hřebenem lopatky",
+                    insertion: "kost pažní",
+                    function: "zevní rotace v rameni"
+                },
+                {
+                    name: "podlopatkový sval",
+                    origin: "pod lopatkou",
+                    insertion: "kost pažní",
+                    function: "vnitřní rotace v rameni"
+                },
+                {
+                    name: "velký oblý sval",
+                    origin: "lopatka",
+                    insertion: "kost pažní",
+                    function: "zapažení a připažení v rameni"
+                },
+                {
+                    name: "malý oblý sval",
+                    origin: "lopatka",
+                    insertion: "kost pažní",
+                    function: "zevní rotace v rameni"
+                },
+                {
+                    name: "dvojhlavý sval pažní",
+                    origin: "dlouhá hlavička - nad jamkou ramenního kloubu na lopatce, krátká hlavička - hákovitý výběžek lopatky",
+                    insertion: "drsnatina kosti vřetenní",
+                    function: "ohnutí v lokti, dlouhá hlavička - upažení, krátká hlavička - připažení"
+                },
+                {
+                    name: "hluboký sval pažní",
+                    origin: "přední strana pažní kosti",
+                    insertion: "drsnatina kosti loketní",
+                    function: "pokrčení v lokti"
+                },
+                {
+                    name: "trojhlavý sval pažní",
+                    origin: "na lopatce, pod jamkou ramenního kloubu, zadní strana pažní kosti",
+                    insertion: "okovec kosti loketní",
+                    function: "natažení v rameni a v lokti"
+                },
+                {
+                    name: "podskupina ohybačů",
+                    origin: "vnitřní nadkloubní výběžek kosti pažní, přední strana předloktí",
+                    insertion: "přední strana zápěstí a prsty (dlaňová strana)",
+                    function: "ohnutí lokte, zápěstí a prstů"
+                },
+                {
+                    name: "natahovače předloktí",
+                    origin: "zevní nadkloubní výběžek kosti pažní a hřbet předloktí",
+                    insertion: "hřbet zápěstí a prsty",
+                    function: "natažení lokte, zápěstí a prstů"
+                },
+                {
+                    name: "sval vřetenní",
+                    origin: "zevní nadkloubní výběžek kosti pažní",
+                    insertion: "bodcovitý výběžek kosti vřetenní",
+                    function: "ohnutí lokte"
+                }
+            ],
+            back: [ // Záda
+                {
+                    name: "sval trapézový",
+                    origin: "týlní kost, krční páteř a hrudní páteř",
+                    insertion: "hřeben lopatky, nadpažek lopatky, klíční kost",
+                    function: "záklon krční a hrudní páteře, přitažení lopatek k páteři"
+                },
+                {
+                    name: "široký sval zádový",
+                    origin: "bederní povázka",
+                    insertion: "kost pažní",
+                    function: "zapažení a připažení v rameni"
+                },
+                {
+                    name: "rombitské svaly",
+                    origin: "hrudní páteř",
+                    insertion: "vnitřní strana lopatky",
+                    function: "přitažení lopatek k páteři"
+                },
+                {
+                    name: "zdvihač lopatky",
+                    origin: "krční páteř",
+                    insertion: "horní strana lopatky",
+                    function: "zdvihání lopatky"
+                },
+                {
+                    name: "čtvercový sval bederní",
+                    origin: "dvanácté žebro",
+                    insertion: "kost kyčelní",
+                    function: "záklon a úklon trupu (extenze a inklinace)"
+                },
+                {
+                    name: "vzpřimovač trupu",
+                    origin: "podél celé páteře",
+                    insertion: "podél celé páteře",
+                    function: "záklon, úklon a rotace páteře"
+                },
+                {
+                    name: "šíjové svaly",
+                    origin: "krční páteř",
+                    insertion: "týlní kost",
+                    function: "záklon hlavy"
+                }
+            ],
+            abdomen: [ // Břicho
+                {
+                    name: "přímý sval břišní",
+                    origin: "žebra, dolní část prsní kosti",
+                    insertion: "kost stydká",
+                    function: "předklon trupu"
+                },
+                {
+                    name: "zevní šikmý sval",
+                    origin: "žebra",
+                    insertion: "pochva přímého svalu břišního",
+                    function: "rotace trupu, tvar břicha"
+                },
+                {
+                    name: "vnitřní šikmý sval břišní",
+                    origin: "hřeben kyčelní",
+                    insertion: "pochva přímého svalu břišního",
+                    function: "rotace trupu, tvar břicha"
+                },
+                {
+                    name: "příčný sval břišní",
+                    origin: "bederní páteř",
+                    insertion: "pochva přímého svalu břišního",
+                    function: "břišní lis, tvar břicha"
+                }
+            ],
+            chest: [ // Hrudník
+                {
+                    name: "velký prsní sval",
+                    origin: "klíční a hrudní kost",
+                    insertion: "kost pažní",
+                    function: "předpažení v rameni"
+                },
+                {
+                    name: "malý prsní sval",
+                    origin: "žebra",
+                    insertion: "hákovitý výběžek lopatky",
+                    function: "zdvihání žeber"
+                },
+                {
+                    name: "pilovitý sval",
+                    origin: "žebra",
+                    insertion: "vnitřní strana lopatky",
+                    function: "vzpažení v rameni"
+                },
+                {
+                    name: "zevní mezižeberní svaly",
+                    origin: "žebro",
+                    insertion: "sousední nižší žebro",
+                    function: "zdvihání žeber - nádech"
+                },
+                {
+                    name: "vnitřní mezižeberní svaly",
+                    origin: "žebro",
+                    insertion: "sousední vyšší žebro",
+                    function: "stahování žeber - výdech"
+                }
+            ]
+        };
+
+        // Globální proměnné
+        let currentQuestion = null;
+        let correctAnswer = "";
+        let currentGroup = 'all';
+        let autoListenEnabled = false;
+        let stats = {
+            correct: 0,
+            incorrect: 0,
+            total: 0
+        };
+        let recognition = null;
+        let synthesis = window.speechSynthesis;
+
+        // Funkce pro získání aktuální skupiny svalů
+        function getCurrentMuscles() {
+            if (currentGroup === 'all') {
+                return Object.values(muscleData).flat();
+            }
+            return muscleData[currentGroup] || [];
+        }
+
+        // Inicializace speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'cs-CZ';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+        } else if ('SpeechRecognition' in window) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'cs-CZ';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+        }
+
+        // Funkce pro text-to-speech
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'cs-CZ';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            
+            // Zvýraznění při mluvení
+            document.getElementById('question').classList.add('speaking');
+            utterance.onend = () => {
+                document.getElementById('question').classList.remove('speaking');
+            };
+            
+            synthesis.speak(utterance);
+        }
+
+        // Generování nové otázky
+        function generateQuestion() {
+            // Zkontrolovat, které typy otázek jsou povoleny
+            const settings = {
+                name: document.getElementById('askName').checked,
+                origin: document.getElementById('askOrigin').checked,
+                insertion: document.getElementById('askInsertion').checked,
+                function: document.getElementById('askFunction').checked
+            };
+
+            const enabledTypes = Object.keys(settings).filter(key => settings[key]);
+            
+            if (enabledTypes.length === 0) {
+                alert('Prosím zapni alespoň jeden typ otázky!');
+                return;
+            }
+
+            const muscles = getCurrentMuscles();
+            if (muscles.length === 0) {
+                alert('V této skupině nejsou žádné svaly!');
+                return;
+            }
+
+            // Vyber náhodný sval
+            const muscle = muscles[Math.floor(Math.random() * muscles.length)];
+            
+            // Vyber náhodný typ otázky z povolených
+            const questionType = enabledTypes[Math.floor(Math.random() * enabledTypes.length)];
+            
+            let questionText = "";
+            
+            switch(questionType) {
+                case 'name':
+                    // Dej náhodně buď začátek, nebo úpon, nebo funkci a ptej se na název
+                    const givenInfo = ['origin', 'insertion', 'function'][Math.floor(Math.random() * 3)];
+                    if (givenInfo === 'origin') {
+                        questionText = `Který sval má začátek: ${muscle.origin}?`;
+                    } else if (givenInfo === 'insertion') {
+                        questionText = `Který sval má úpon: ${muscle.insertion}?`;
+                    } else {
+                        questionText = `Který sval má funkci: ${muscle.function}?`;
+                    }
+                    correctAnswer = muscle.name;
+                    break;
+                    
+                case 'origin':
+                    questionText = `Jaký je začátek svalu: ${muscle.name}?`;
+                    correctAnswer = muscle.origin;
+                    break;
+                    
+                case 'insertion':
+                    questionText = `Jaký je úpon svalu: ${muscle.name}?`;
+                    correctAnswer = muscle.insertion;
+                    break;
+                    
+                case 'function':
+                    questionText = `Jaká je funkce svalu: ${muscle.name}?`;
+                    correctAnswer = muscle.function;
+                    break;
+            }
+            
+            currentQuestion = {
+                text: questionText,
+                answer: correctAnswer,
+                muscle: muscle,
+                type: questionType
+            };
+            
+            // Reset zobrazení
+            const questionEl = document.getElementById('question');
+            questionEl.textContent = questionText;
+            questionEl.style.fontSize = '1.4em';
+            document.getElementById('answerDisplay').textContent = "";
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Přečti otázku nahlas
+            speak(questionText);
+            
+            // Pokud je zapnuté automatické naslouchání, spusť ho po přečtení otázky
+            if (autoListenEnabled) {
+                // Počkej než se otázka přečte (odhadovaná doba)
+                const estimatedDuration = questionText.length * 50; // ~50ms na znak
+                setTimeout(() => {
+                    if (currentQuestion && currentQuestion.text === questionText) {
+                        startListening();
+                    }
+                }, estimatedDuration + 500);
+            }
+        }
+
+        // Normalizace textu pro porovnání
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .replace(/á/g, 'a')
+                .replace(/č/g, 'c')
+                .replace(/ď/g, 'd')
+                .replace(/é/g, 'e')
+                .replace(/ě/g, 'e')
+                .replace(/í/g, 'i')
+                .replace(/ň/g, 'n')
+                .replace(/ó/g, 'o')
+                .replace(/ř/g, 'r')
+                .replace(/š/g, 's')
+                .replace(/ť/g, 't')
+                .replace(/ú/g, 'u')
+                .replace(/ů/g, 'u')
+                .replace(/ý/g, 'y')
+                .replace(/ž/g, 'z')
+                .replace(/[^a-z0-9\s]/g, '')
+                .trim();
+        }
+
+        // Kontrola odpovědi
+        function checkAnswer(userAnswer) {
+            const normalizedUser = normalizeText(userAnswer);
+            const normalizedCorrect = normalizeText(correctAnswer);
+            
+            // Zkontroluj, zda odpověď obsahuje klíčová slova
+            const correctWords = normalizedCorrect.split(' ');
+            const userWords = normalizedUser.split(' ');
+            
+            // Počítej shodu klíčových slov
+            let matchCount = 0;
+            for (let word of correctWords) {
+                if (word.length > 3) { // Pouze slova delší než 3 znaky
+                    if (normalizedUser.includes(word)) {
+                        matchCount++;
+                    }
+                }
+            }
+            
+            // Pokud se shoduje většina klíčových slov, považuj za správnou odpověď
+            const threshold = correctWords.filter(w => w.length > 3).length * 0.6;
+            const isCorrect = matchCount >= threshold || normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser);
+            
+            const feedback = document.getElementById('feedback');
+            
+            if (isCorrect) {
+                stats.correct++;
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `✅ Správně! <div class="correct-answer">${correctAnswer}</div>`;
+                speak('Správně!');
+            } else {
+                stats.incorrect++;
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = `❌ Špatně. <div class="correct-answer">Správná odpověď: ${correctAnswer}</div>`;
+                speak(`Špatně. Správná odpověď je: ${correctAnswer}`);
+            }
+            
+            stats.total++;
+            updateStats();
+        }
+
+        // Aktualizace statistik
+        function updateStats() {
+            document.getElementById('correctCount').textContent = stats.correct;
+            document.getElementById('incorrectCount').textContent = stats.incorrect;
+            
+            const successRate = stats.total > 0 
+                ? Math.round((stats.correct / stats.total) * 100) 
+                : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            const progressPercent = stats.total > 0 
+                ? (stats.correct / stats.total) * 100 
+                : 0;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+        }
+
+        // Funkce pro spuštění naslouchání
+        function startListening() {
+            if (!currentQuestion) {
+                alert('Nejdřív vygeneruj otázku!');
+                return;
+            }
+            
+            if (!recognition) {
+                alert('Tvůj prohlížeč nepodporuje hlasové rozpoznávání. Použij Google Chrome.');
+                return;
+            }
+            
+            document.getElementById('answerDisplay').textContent = "🎤 Naslouchám...";
+            document.getElementById('startListening').classList.add('listening');
+            
+            try {
+                recognition.start();
+            } catch (err) {
+                console.error('Recognition start error:', err);
+                // Pokud už běží, nejdřív ho zastav
+                if (err.message && err.message.includes('already started')) {
+                    recognition.stop();
+                    setTimeout(() => recognition.start(), 100);
+                }
+            }
+        }
+
+        // Event listenery
+        document.getElementById('newQuestion').addEventListener('click', generateQuestion);
+
+        document.getElementById('repeatQuestion').addEventListener('click', () => {
+            if (currentQuestion) {
+                speak(currentQuestion.text);
+            }
+        });
+
+        document.getElementById('showAnswer').addEventListener('click', () => {
+            if (currentQuestion) {
+                document.getElementById('answerDisplay').textContent = `Odpověď: ${correctAnswer}`;
+                speak(`Správná odpověď je: ${correctAnswer}`);
+            }
+        });
+
+        // Toggle tabulky
+        document.getElementById('toggleTable').addEventListener('click', () => {
+            const tableView = document.getElementById('tableView');
+            const button = document.getElementById('toggleTable');
+            
+            if (tableView.classList.contains('show')) {
+                tableView.classList.remove('show');
+                button.textContent = '📋 Zobrazit tabulku';
+            } else {
+                updateTableView();
+                tableView.classList.add('show');
+                button.textContent = '📋 Skrýt tabulku';
+            }
+        });
+
+        // Group selection
+        document.querySelectorAll('.group-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentGroup = btn.dataset.group;
+                
+                // Pokud je tabulka zobrazená, aktualizuj ji
+                if (document.getElementById('tableView').classList.contains('show')) {
+                    updateTableView();
+                }
+            });
+        });
+
+        // Funkce pro aktualizaci zobrazení tabulky
+        function updateTableView() {
+            const muscles = getCurrentMuscles();
+            const tableBody = document.getElementById('tableBody');
+            const groupTitle = document.getElementById('groupTitle');
+            
+            // Nastavení nadpisu
+            const groupNames = {
+                'all': 'Všechny skupiny',
+                'lower': 'Dolní končetina',
+                'upper': 'Horní končetina',
+                'back': 'Záda',
+                'abdomen': 'Břicho',
+                'chest': 'Hrudník'
+            };
+            groupTitle.textContent = groupNames[currentGroup];
+            
+            // Vyplnění tabulky
+            tableBody.innerHTML = '';
+            muscles.forEach(muscle => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${muscle.name}</strong></td>
+                    <td>${muscle.origin}</td>
+                    <td>${muscle.insertion}</td>
+                    <td>${muscle.function}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Auto-listen checkbox handler
+        document.getElementById('autoListen').addEventListener('change', (e) => {
+            autoListenEnabled = e.target.checked;
+            
+            // Vizuální feedback
+            const control = document.querySelector('.auto-listen-control');
+            if (autoListenEnabled) {
+                control.classList.add('active');
+            } else {
+                control.classList.remove('active');
+            }
+        });
+
+        document.getElementById('startListening').addEventListener('click', startListening);
+
+        // Speech recognition callbacks
+        if (recognition) {
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('answerDisplay').textContent = `Tvoje odpověď: ${transcript}`;
+                document.getElementById('startListening').classList.remove('listening');
+                
+                checkAnswer(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                document.getElementById('answerDisplay').textContent = `Chyba: ${event.error}`;
+                document.getElementById('startListening').classList.remove('listening');
+            };
+
+            recognition.onend = () => {
+                document.getElementById('startListening').classList.remove('listening');
+            };
+        }
+
+        // Inicializace
+        updateStats();
+    </script>
+</body>
+</html>
