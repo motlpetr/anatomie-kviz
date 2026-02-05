@@ -110,6 +110,7 @@
             font-weight: 600;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
         }
 
         .btn-primary {
@@ -572,7 +573,7 @@
 
         <div class="mode-selection">
             <h3 style="color: #667eea; margin-bottom: 10px;">Režim procvičování</h3>
-            <div class="mode-buttons" id="modeButtons" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="mode-buttons" id="modeButtons" style="grid-template-columns: repeat(3, 1fr);">
                 <button class="mode-btn" data-mode="voice" id="voiceModeBtn">
                     <span class="mode-icon">🎤</span>
                     <div>Hlasový</div>
@@ -582,6 +583,11 @@
                     <span class="mode-icon">📝</span>
                     <div>Textový</div>
                     <div class="mode-description">Přečteš si, odpovíš v duchu, zkontroluj</div>
+                </button>
+                <button class="mode-btn" data-mode="narration" id="narrationModeBtn">
+                    <span class="mode-icon">📖</span>
+                    <div>Vypravění</div>
+                    <div class="mode-description">Poslechni si informace o svalech</div>
                 </button>
             </div>
         </div>
@@ -663,6 +669,7 @@
             <button class="btn-secondary" id="repeatQuestion">🔊 Opakovat otázku</button>
             <button class="btn-secondary" id="toggleTable">📋 Zobrazit tabulku</button>
             <button class="btn-danger btn-full" id="showAnswer">👁️ Zobrazit odpověď</button>
+            <button class="btn-danger btn-full" id="pauseNarration" style="display: none;">⏸️ Pozastavit</button>
         </div>
     </div>
 
@@ -983,6 +990,7 @@
         let autoListenEnabled = false;
         let selectedVoice = null;
         let availableVoices = [];
+        let narrationPaused = false; // Pro pozastavení vypravění
         let stats = {
             correct: 0,
             incorrect: 0,
@@ -1005,15 +1013,13 @@
             
             if (voiceModeBtn) {
                 voiceModeBtn.style.display = 'none';
-                modeButtons.style.gridTemplateColumns = '1fr'; // Jen jedno tlačítko
             }
             
-            // Skryj celou sekci výběru režimu (je jen jeden)
-            if (modeSelection) {
-                modeSelection.style.display = 'none';
+            if (modeButtons) {
+                modeButtons.style.gridTemplateColumns = 'repeat(2, 1fr)'; // Dvě tlačítka: Textový a Vypravění
             }
             
-            // Skryj také výběr hlasu (není potřeba v textovém režimu)
+            // NEZOBRAZUJ výběr hlasu na mobilu
             const voiceSelection = document.querySelector('.voice-selection');
             if (voiceSelection) {
                 voiceSelection.style.display = 'none';
@@ -1147,6 +1153,15 @@
                         startListening();
                     }, 500); // Krátká pauza po dočtení otázky
                 }
+                
+                // V režimu vypravění automaticky načti další sval po dočtení
+                if (currentMode === 'narration' && currentQuestion && text === currentQuestion.text && !narrationPaused) {
+                    setTimeout(() => {
+                        if (!narrationPaused) { // Zkontroluj znovu po timeoutu
+                            generateNarration();
+                        }
+                    }, 2000); // 2 sekundy pauza mezi svaly
+                }
             };
             
             synthesis.speak(utterance);
@@ -1160,6 +1175,8 @@
             const showAnswerBtn = document.getElementById('showAnswer');
             const statsSection = document.querySelector('.stats');
             const progressBar = document.querySelector('.progress');
+            const settingsCheckboxes = document.querySelector('.settings h3');
+            const checkboxGroup = document.querySelector('.checkbox-group');
             
             if (currentMode === 'text') {
                 // Textový režim - bez hlasu, bez statistik
@@ -1171,6 +1188,27 @@
                 showAnswerBtn.textContent = '👁️ Zobrazit odpověď';
                 statsSection.style.display = 'none';
                 progressBar.style.display = 'none';
+                document.getElementById('pauseNarration').style.display = 'none';
+                // Zobraz checkboxy pro typy otázek
+                if (settingsCheckboxes && settingsCheckboxes.textContent === 'Typ otázek') {
+                    settingsCheckboxes.parentElement.style.display = 'block';
+                }
+            } else if (currentMode === 'narration') {
+                // Režim vypravění - jen poslechni si
+                autoListenControl.style.display = 'none';
+                startListeningBtn.style.display = 'none';
+                repeatBtn.style.display = 'block';
+                showAnswerBtn.style.display = 'none';
+                statsSection.style.display = 'none';
+                progressBar.style.display = 'none';
+                document.getElementById('pauseNarration').style.display = 'block';
+                // Skryj checkboxy pro typy otázek (nejsou potřeba)
+                if (settingsCheckboxes && settingsCheckboxes.textContent === 'Typ otázek') {
+                    settingsCheckboxes.parentElement.style.display = 'none';
+                }
+                // Reset pause state při vstupu do režimu
+                narrationPaused = false;
+                document.getElementById('pauseNarration').innerHTML = '⏸️ Pozastavit';
             } else { // voice
                 // Hlasový režim - vše včetně statistik
                 autoListenControl.style.display = 'flex';
@@ -1181,11 +1219,65 @@
                 showAnswerBtn.textContent = '👁️ Ukázat odpověď';
                 statsSection.style.display = 'grid';
                 progressBar.style.display = 'block';
+                document.getElementById('pauseNarration').style.display = 'none';
+                // Zobraz checkboxy pro typy otázek
+                if (settingsCheckboxes && settingsCheckboxes.textContent === 'Typ otázek') {
+                    settingsCheckboxes.parentElement.style.display = 'block';
+                }
             }
+        }
+
+        // Generování narace (vypravění o svalu)
+        function generateNarration() {
+            const muscles = getCurrentMuscles();
+            if (muscles.length === 0) {
+                alert('V této skupině nejsou žádné svaly!');
+                return;
+            }
+
+            // Vyber náhodný sval
+            const muscle = muscles[Math.floor(Math.random() * muscles.length)];
+            
+            // Vytvoř naraaci
+            const narrationText = `${muscle.name}. Začátek: ${muscle.origin}. Úpon: ${muscle.insertion}. Funkce: ${muscle.function}.`;
+            
+            currentQuestion = {
+                text: narrationText,
+                muscle: muscle,
+                type: 'narration'
+            };
+            
+            // Zobraz informace
+            const questionEl = document.getElementById('question');
+            questionEl.innerHTML = `
+                <div style="text-align: left; line-height: 1.8;">
+                    <div style="font-size: 1.3em; font-weight: bold; color: #667eea; margin-bottom: 15px;">${muscle.name}</div>
+                    <div style="margin-bottom: 10px;"><strong>Začátek:</strong> ${muscle.origin}</div>
+                    <div style="margin-bottom: 10px;"><strong>Úpon:</strong> ${muscle.insertion}</div>
+                    <div><strong>Funkce:</strong> ${muscle.function}</div>
+                </div>
+            `;
+            questionEl.style.fontSize = '';
+            document.getElementById('answerDisplay').textContent = "";
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').style.display = 'none';
+            
+            // Změň text tlačítek pro narační režim
+            document.getElementById('newQuestion').innerHTML = '▶️ Další sval';
+            document.getElementById('repeatQuestion').innerHTML = '🔁 Zopakovat';
+            
+            // Přečti naraaci nahlas
+            speak(narrationText);
         }
 
         // Generování nové otázky
         function generateQuestion() {
+            // V režimu vypravění generuj naraci místo otázky
+            if (currentMode === 'narration') {
+                generateNarration();
+                return;
+            }
+            
             // Zkontrolovat, které typy otázek jsou povoleny
             const settings = {
                 name: document.getElementById('askName').checked,
@@ -1295,6 +1387,10 @@
             
             // Znovu zobraz tlačítko "Zobrazit odpověď" (pokud bylo schované)
             document.getElementById('showAnswer').style.display = 'block';
+            
+            // Obnov původní texty tlačítek (pokud byly změněny v narračním režimu)
+            document.getElementById('newQuestion').innerHTML = '🔄 Nová otázka';
+            document.getElementById('repeatQuestion').innerHTML = '🔊 Opakovat otázku';
             
             // Přečti otázku nahlas pouze v hlasovém režimu
             if (currentMode === 'voice') {
@@ -1571,6 +1667,26 @@
         });
 
         document.getElementById('startListening').addEventListener('click', startListening);
+
+        // Pause/Resume narration button
+        document.getElementById('pauseNarration').addEventListener('click', () => {
+            narrationPaused = !narrationPaused;
+            const btn = document.getElementById('pauseNarration');
+            
+            if (narrationPaused) {
+                btn.innerHTML = '▶️ Pokračovat';
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-success');
+                // Zastav aktuální mluvení
+                synthesis.cancel();
+            } else {
+                btn.innerHTML = '⏸️ Pozastavit';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-danger');
+                // Spusť další sval
+                generateNarration();
+            }
+        });
 
         // Speech recognition callbacks
         if (recognition) {
