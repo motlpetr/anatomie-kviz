@@ -1140,6 +1140,13 @@
             document.getElementById('question').classList.add('speaking');
             utterance.onend = () => {
                 document.getElementById('question').classList.remove('speaking');
+                
+                // Pokud je auto-listen zapnuté a mluvíme otázku, spusť naslouchání PO dočtení
+                if (autoListenEnabled && currentMode === 'voice' && currentQuestion && text === currentQuestion.text) {
+                    setTimeout(() => {
+                        startListening();
+                    }, 500); // Krátká pauza po dočtení otázky
+                }
             };
             
             synthesis.speak(utterance);
@@ -1292,16 +1299,7 @@
             // Přečti otázku nahlas pouze v hlasovém režimu
             if (currentMode === 'voice') {
                 speak(questionText);
-            }
-            
-            // Automatické naslouchání pouze v hlasovém režimu
-            if (currentMode === 'voice' && autoListenEnabled) {
-                const estimatedDuration = questionText.length * 50;
-                setTimeout(() => {
-                    if (currentQuestion && currentQuestion.text === questionText) {
-                        startListening();
-                    }
-                }, estimatedDuration + 500);
+                // Auto-listen se spustí automaticky v speak() funkci po dočtení
             }
         }
 
