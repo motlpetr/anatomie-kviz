@@ -290,6 +290,30 @@
             margin-bottom: 15px;
         }
 
+        .voice-selection {
+            background: #f0f0ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #667eea;
+        }
+
+        .voice-selection h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .voice-selection select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+        }
+
         .group-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -438,6 +462,13 @@
                 <label for="autoListen" style="cursor: pointer; font-weight: 600;">
                     🎤 Automatické naslouchání po každé otázce (doporučeno)
                 </label>
+            </div>
+
+            <div class="voice-selection">
+                <h4>🔊 Výběr hlasu pro čtení otázek</h4>
+                <select id="voiceSelect">
+                    <option value="">Načítání hlasů...</option>
+                </select>
             </div>
             
             <h3>Skupina svalů</h3>
@@ -820,8 +851,10 @@
         let currentQuestion = null;
         let correctAnswer = "";
         let currentGroup = 'all';
-        let currentMode = 'text'; // voice, text, hybrid
+        let currentMode = 'text'; // voice, text
         let autoListenEnabled = false;
+        let selectedVoice = null;
+        let availableVoices = [];
         let stats = {
             correct: 0,
             incorrect: 0,
@@ -836,6 +869,57 @@
                 return Object.values(muscleData).flat();
             }
             return muscleData[currentGroup] || [];
+        }
+
+        // Načtení dostupných hlasů
+        function loadVoices() {
+            availableVoices = synthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            
+            if (availableVoices.length === 0) {
+                return; // Hlasy ještě nejsou načtené
+            }
+            
+            voiceSelect.innerHTML = '';
+            
+            // Filtruj české hlasy nebo pokud nejsou, zobraz všechny
+            let czechVoices = availableVoices.filter(voice => 
+                voice.lang.startsWith('cs') || voice.lang.startsWith('sk')
+            );
+            
+            // Pokud nejsou české hlasy, použij všechny
+            const voicesToShow = czechVoices.length > 0 ? czechVoices : availableVoices;
+            
+            voicesToShow.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                
+                // Označ ženské hlasy
+                if (voice.name.toLowerCase().includes('female') || 
+                    voice.name.toLowerCase().includes('zuzana') ||
+                    voice.name.toLowerCase().includes('woman')) {
+                    option.textContent += ' 👩';
+                }
+                
+                voiceSelect.appendChild(option);
+                
+                // Vyber první český ženský hlas jako výchozí
+                if (!selectedVoice && (voice.name.toLowerCase().includes('zuzana') || 
+                    voice.name.toLowerCase().includes('female'))) {
+                    selectedVoice = voice;
+                    option.selected = true;
+                } else if (!selectedVoice && index === 0) {
+                    selectedVoice = voice;
+                    option.selected = true;
+                }
+            });
+        }
+
+        // Inicializace hlasů
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
         }
 
         // Inicializace speech recognition
@@ -857,6 +941,11 @@
             utterance.lang = 'cs-CZ';
             utterance.rate = 0.9;
             utterance.pitch = 1;
+            
+            // Použij vybraný hlas
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
             
             // Zvýraznění při mluvení
             document.getElementById('question').classList.add('speaking');
@@ -1089,11 +1178,6 @@
                     generateQuestion();
                 }, 3000); // Počkaj 3 sekundy než načteš další otázku
             }
-        } Správná odpověď je: ${correctAnswer}`);
-            }
-            
-            stats.total++;
-            updateStats();
         }
 
         // Aktualizace statistik
@@ -1240,6 +1324,12 @@
                 currentMode = btn.dataset.mode;
                 updateModeUI();
             });
+        });
+
+        // Voice selection
+        document.getElementById('voiceSelect').addEventListener('change', (e) => {
+            const voiceName = e.target.value;
+            selectedVoice = availableVoices.find(voice => voice.name === voiceName);
         });
 
         // Auto-listen checkbox handler
