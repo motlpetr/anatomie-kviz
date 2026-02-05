@@ -418,7 +418,7 @@
 
         <div class="mode-selection">
             <h3 style="color: #667eea; margin-bottom: 10px;">Režim procvičování</h3>
-            <div class="mode-buttons">
+            <div class="mode-buttons" style="grid-template-columns: repeat(2, 1fr);">
                 <button class="mode-btn" data-mode="voice">
                     <span class="mode-icon">🎤</span>
                     <div>Hlasový</div>
@@ -428,11 +428,6 @@
                     <span class="mode-icon">📝</span>
                     <div>Textový</div>
                     <div class="mode-description">Přečteš si, odpovíš v duchu, zkontroluj</div>
-                </button>
-                <button class="mode-btn" data-mode="hybrid">
-                    <span class="mode-icon">🔊</span>
-                    <div>Hybridní</div>
-                    <div class="mode-description">Otázka nahlas, odpovídáš v duchu</div>
                 </button>
             </div>
         </div>
@@ -891,7 +886,7 @@
                 showAnswerBtn.textContent = '👁️ Zobrazit odpověď';
                 markCorrectBtn.style.display = 'none';
                 markIncorrectBtn.style.display = 'none';
-            } else if (currentMode === 'voice') {
+            } else { // voice
                 // Hlasový režim - vše
                 autoListenControl.style.display = 'flex';
                 startListeningBtn.style.display = 'block';
@@ -899,16 +894,6 @@
                 showAnswerBtn.style.display = 'block';
                 showAnswerBtn.classList.add('btn-full');
                 showAnswerBtn.textContent = '👁️ Ukázat odpověď';
-                markCorrectBtn.style.display = 'none';
-                markIncorrectBtn.style.display = 'none';
-            } else { // hybrid
-                // Hybridní - otázka nahlas, bez naslouchání
-                autoListenControl.style.display = 'none';
-                startListeningBtn.style.display = 'none';
-                repeatBtn.style.display = 'block';
-                showAnswerBtn.style.display = 'block';
-                showAnswerBtn.classList.remove('btn-full');
-                showAnswerBtn.textContent = '👁️ Zobrazit odpověď';
                 markCorrectBtn.style.display = 'none';
                 markIncorrectBtn.style.display = 'none';
             }
@@ -944,40 +929,60 @@
             const questionType = enabledTypes[Math.floor(Math.random() * enabledTypes.length)];
             
             let questionText = "";
+            let possibleAnswers = []; // Pro kontrolu více správných odpovědí
             
             switch(questionType) {
                 case 'name':
-                    // Dej náhodně buď začátek, nebo úpon, nebo funkci a ptej se na název
+                    // DŮLEŽITÉ: Kontroluj jestli je info jedinečné
                     const givenInfo = ['origin', 'insertion', 'function'][Math.floor(Math.random() * 3)];
+                    let searchKey = '';
+                    let searchValue = '';
+                    
                     if (givenInfo === 'origin') {
+                        searchKey = 'origin';
+                        searchValue = muscle.origin;
                         questionText = `Který sval má začátek: ${muscle.origin}?`;
                     } else if (givenInfo === 'insertion') {
+                        searchKey = 'insertion';
+                        searchValue = muscle.insertion;
                         questionText = `Který sval má úpon: ${muscle.insertion}?`;
                     } else {
+                        searchKey = 'function';
+                        searchValue = muscle.function;
                         questionText = `Který sval má funkci: ${muscle.function}?`;
                     }
-                    correctAnswer = muscle.name;
+                    
+                    // Najdi všechny svaly se stejným začátkem/úponem/funkcí
+                    possibleAnswers = muscles
+                        .filter(m => m[searchKey] === searchValue)
+                        .map(m => m.name);
+                    
+                    correctAnswer = possibleAnswers.join(' nebo ');
                     break;
                     
                 case 'origin':
                     questionText = `Jaký je začátek svalu: ${muscle.name}?`;
                     correctAnswer = muscle.origin;
+                    possibleAnswers = [muscle.origin];
                     break;
                     
                 case 'insertion':
                     questionText = `Jaký je úpon svalu: ${muscle.name}?`;
                     correctAnswer = muscle.insertion;
+                    possibleAnswers = [muscle.insertion];
                     break;
                     
                 case 'function':
                     questionText = `Jaká je funkce svalu: ${muscle.name}?`;
                     correctAnswer = muscle.function;
+                    possibleAnswers = [muscle.function];
                     break;
             }
             
             currentQuestion = {
                 text: questionText,
                 answer: correctAnswer,
+                possibleAnswers: possibleAnswers,
                 muscle: muscle,
                 type: questionType
             };
@@ -990,8 +995,8 @@
             document.getElementById('feedback').className = 'feedback';
             document.getElementById('feedback').style.display = 'none';
             
-            // Přečti otázku nahlas pouze v hlasovém a hybridním režimu
-            if (currentMode === 'voice' || currentMode === 'hybrid') {
+            // Přečti otázku nahlas pouze v hlasovém režimu
+            if (currentMode === 'voice') {
                 speak(questionText);
             }
             
@@ -1031,25 +1036,31 @@
         // Kontrola odpovědi
         function checkAnswer(userAnswer) {
             const normalizedUser = normalizeText(userAnswer);
-            const normalizedCorrect = normalizeText(correctAnswer);
             
-            // Zkontroluj, zda odpověď obsahuje klíčová slova
-            const correctWords = normalizedCorrect.split(' ');
-            const userWords = normalizedUser.split(' ');
+            // Pokud existuje více možných odpovědí, zkontroluj všechny
+            let isCorrect = false;
             
-            // Počítej shodu klíčových slov
-            let matchCount = 0;
-            for (let word of correctWords) {
-                if (word.length > 3) { // Pouze slova delší než 3 znaky
-                    if (normalizedUser.includes(word)) {
-                        matchCount++;
+            if (currentQuestion.possibleAnswers && currentQuestion.possibleAnswers.length > 0) {
+                for (let possibleAnswer of currentQuestion.possibleAnswers) {
+                    const normalizedCorrect = normalizeText(possibleAnswer);
+                    const correctWords = normalizedCorrect.split(' ').filter(w => w.length > 3);
+                    
+                    // Počítej shodu klíčových slov
+                    let matchCount = 0;
+                    for (let word of correctWords) {
+                        if (normalizedUser.includes(word)) {
+                            matchCount++;
+                        }
+                    }
+                    
+                    // Pokud se shoduje většina klíčových slov
+                    const threshold = correctWords.length * 0.6;
+                    if (matchCount >= threshold || normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser)) {
+                        isCorrect = true;
+                        break;
                     }
                 }
             }
-            
-            // Pokud se shoduje většina klíčových slov, považuj za správnou odpověď
-            const threshold = correctWords.filter(w => w.length > 3).length * 0.6;
-            const isCorrect = matchCount >= threshold || normalizedUser.includes(normalizedCorrect) || normalizedCorrect.includes(normalizedUser);
             
             const feedback = document.getElementById('feedback');
             
@@ -1063,6 +1074,22 @@
                 feedback.className = 'feedback incorrect';
                 feedback.innerHTML = `❌ Špatně. <div class="correct-answer">Správná odpověď: ${correctAnswer}</div>`;
                 speak(`Špatně. Správná odpověď je: ${correctAnswer}`);
+            }
+            
+            stats.total++;
+            updateStats();
+            
+            // Schovat otázku po vyhodnocení
+            document.getElementById('question').textContent = isCorrect ? '✅ Správná odpověď!' : '❌ Špatná odpověď';
+            document.getElementById('question').style.fontSize = '2em';
+            
+            // Po zobrazení feedbacku automaticky načíst novou otázku (pokud je zapnuté auto-listen)
+            if (autoListenEnabled) {
+                setTimeout(() => {
+                    generateQuestion();
+                }, 3000); // Počkaj 3 sekundy než načteš další otázku
+            }
+        } Správná odpověď je: ${correctAnswer}`);
             }
             
             stats.total++;
@@ -1123,8 +1150,8 @@
 
         document.getElementById('showAnswer').addEventListener('click', () => {
             if (currentQuestion) {
-                if (currentMode === 'text' || currentMode === 'hybrid') {
-                    // V textovém/hybridním režimu jen ukázat odpověď bez hodnocení
+                if (currentMode === 'text') {
+                    // V textovém režimu jen ukázat odpověď bez hodnocení
                     document.getElementById('answerDisplay').textContent = `Správná odpověď: ${correctAnswer}`;
                     const feedback = document.getElementById('feedback');
                     feedback.className = 'feedback';
@@ -1137,10 +1164,6 @@
                     document.getElementById('markCorrect').style.display = 'block';
                     document.getElementById('markIncorrect').style.display = 'block';
                     document.getElementById('showAnswer').style.display = 'none';
-                    
-                    if (currentMode === 'hybrid') {
-                        speak(`Správná odpověď je: ${correctAnswer}`);
-                    }
                 } else {
                     // V hlasovém režimu standardní chování
                     document.getElementById('answerDisplay').textContent = `Odpověď: ${correctAnswer}`;
