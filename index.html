@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hlasový kvíz - Anatomie svalů</title>
+    <title>Kvíz - Anatomie svalů</title>
     <style>
         * {
             margin: 0;
@@ -549,7 +549,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎤 Hlasový kvíz - Anatomie svalů</h1>
+        <h1>🎓 Kvíz - Anatomie svalů</h1>
         
         <div class="stats">
             <div class="stat-box">
@@ -1286,6 +1286,9 @@
             document.getElementById('feedback').className = 'feedback';
             document.getElementById('feedback').style.display = 'none';
             
+            // Znovu zobraz tlačítko "Zobrazit odpověď" (pokud bylo schované)
+            document.getElementById('showAnswer').style.display = 'block';
+            
             // Přečti otázku nahlas pouze v hlasovém režimu
             if (currentMode === 'voice') {
                 speak(questionText);
@@ -1461,7 +1464,7 @@
         document.getElementById('showAnswer').addEventListener('click', () => {
             if (currentQuestion) {
                 if (currentMode === 'text') {
-                    // V textovém režimu jen ukázat odpověď a po chvíli další otázku
+                    // V textovém režimu jen ukázat odpověď - zůstane dokud neklikne na Nová otázka
                     document.getElementById('answerDisplay').textContent = `Správná odpověď: ${correctAnswer}`;
                     const feedback = document.getElementById('feedback');
                     feedback.className = 'feedback';
@@ -1470,14 +1473,8 @@
                     feedback.style.color = '#1565c0';
                     feedback.innerHTML = `💡 Správná odpověď: <div class="correct-answer">${correctAnswer}</div>`;
                     
-                    // Schovat tlačítko "Zobrazit odpověď"
+                    // Schovat tlačítko "Zobrazit odpověď" až do další otázky
                     document.getElementById('showAnswer').style.display = 'none';
-                    
-                    // Po 2 sekundách automaticky další otázka
-                    setTimeout(() => {
-                        document.getElementById('showAnswer').style.display = 'block';
-                        generateQuestion();
-                    }, 2000);
                 } else {
                     // V hlasovém režimu standardní chování
                     document.getElementById('answerDisplay').textContent = `Odpověď: ${correctAnswer}`;
